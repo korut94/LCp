@@ -58,7 +58,22 @@ public class LCp
     
     private CompactInfo saveGroup( int start, String pr )
     {
+        String compactPr = new String();
         
+        int index = start;
+        
+        while( pr.charAt( index ) != ')' )
+        {
+            char c = pr.charAt( index );
+            
+            //Accumulo ogni carattere che incontro 
+            if( c != '(' ) compactPr += c;
+            //Nel caso trovassi un sottogruppo
+            else
+            {
+                CompactInfo infoSubGroup = saveGroup( index + 1, pr );
+            }
+        }
     }
     
     
@@ -79,4 +94,3 @@ public class LCp
         System.out.println( sx );
     }
 }
-
