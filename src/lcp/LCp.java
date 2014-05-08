@@ -25,21 +25,29 @@ public class LCp
         
         while( index < lenghtPr )
         {
+            char c = pr.charAt( index );
+            
             //Trovato un gruppo di proposizioni
-            if( pr.charAt( index ) == '(' )
+            if( c == '(' )
             {
                 //La funzione salvera il gruppo appena trovato nella
-                //ReferenceTable insieme a tutti i sottogruppi presenti. 
+                //ReferenceTable, insieme a tutti i sottogruppi presenti. 
                 //Inoltre ci restituisce l'indice che ha usato per identificarla
                 //e la posizione della stringa raggiunto dal gruppo
                 CompactInfo info = saveGroup( index + 1, pr );
                 
+                //La nuova stringa avra' l'indice della tabella per
+                //rappresentare il gruppo di proposizioni, semplificando 
+                //notevolmente il controllo di quale regola applicare
                 temp += info.indexTable;
+                //Essendo che pr non viene toccata devo saltare alla posizione
+                //successiva delle parentesi tonde
                 index = info.indexEndGroup;
             }
             
-            else temp += pr.charAt( index );
+            else temp += c;
             
+            //Seleziono il prossimo carattere delle stringa
             index++;
         }
         
