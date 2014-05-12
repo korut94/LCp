@@ -49,7 +49,9 @@ public class ReferenceTable
     {
         for( int i = 0; i < size; i++ ) 
             System.out.println( tableRef[i].getIndex() + 
-                                " " + tableRef[i].getPredicate() );
+                                " " + 
+                                tableRef[i].getPredicate() 
+                              );
     }
     
     
