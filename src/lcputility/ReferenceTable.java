@@ -20,7 +20,7 @@ public class ReferenceTable
     public ReferenceTable( int numRow )
     {
         tableRef = new ReferenceLine[ numRow ];
-        size = numRow;
+        size = 0;
     }
     
     
@@ -34,13 +34,22 @@ public class ReferenceTable
         if( size == tableRef.length ) addRow();
         
         //Aggingo alla tabella il riferimento
-        tableRef[ size ].setReference( ind, pr );
+        tableRef[ size ] = new ReferenceLine( ind, pr );
         //Incremento il contatore di righe
         size++;
         
         //Restituisco l'indice che e' stato asssiocato a pr nella 
         //ReferenceTable
         return ind;
+    }
+    
+    
+    
+    public void printAllReference()
+    {
+        for( int i = 0; i < size; i++ ) 
+            System.out.println( tableRef[i].getIndex() + 
+                                " " + tableRef[i].getPredicate() );
     }
     
     

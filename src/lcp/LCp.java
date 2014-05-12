@@ -72,8 +72,17 @@ public class LCp
             else
             {
                 CompactInfo infoSubGroup = saveGroup( index + 1, pr );
+                
+                compactPr += infoSubGroup.indexTable;
+                index = infoSubGroup.indexEndGroup;
             }
+            
+            index++;
         }
+       
+        char ref = tableGroup.insertReference( compactPr );
+        
+        return new CompactInfo( ref, index );
     }
     
     
@@ -86,10 +95,12 @@ public class LCp
         
         //Frase da analizzare, implementare in android due form che contengono
         //rispettivamente la parte sinistra e quella destra del sequente
-        String sx = "A&B";
+        String sx = "(A&(BVC))&(C->(E&D))";
         String dx = "B&A";
         
         sx = manager.compatta( sx );
+        
+        manager.tableGroup.printAllReference();
         
         System.out.println( sx );
     }
