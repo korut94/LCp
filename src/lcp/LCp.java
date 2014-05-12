@@ -7,6 +7,8 @@ package lcp;
 
 import lcputility.CompactInfo;
 import lcputility.ReferenceTable;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 /**
  *
@@ -15,6 +17,9 @@ import lcputility.ReferenceTable;
 public class LCp 
 {   
     private ReferenceTable tableGroup;
+    private String[] patternGroup;
+    
+    
     
     public String compatta( String pr )
     {
@@ -80,9 +85,20 @@ public class LCp
             index++;
         }
        
-        char ref = tableGroup.insertReference( compactPr );
+        String ref = tableGroup.insertReference( compactPr );
         
         return new CompactInfo( ref, index );
+    }
+    
+    
+    
+    private void setPatternGroup()
+    {
+        //Setto l'espressioni regolari che identificano la regola da usare
+        patternGroup[0] = ".&.";
+        patternGroup[1] = ".V.";
+        patternGroup[2] = "-.";
+        patternGroup[3] = ".>.";
     }
     
     
@@ -92,16 +108,48 @@ public class LCp
         LCp manager = new LCp();
 
         manager.tableGroup = new ReferenceTable( 20 );
+        manager.patternGroup = new String[ 4 ];
         
+        manager.setPatternGroup();
+                
         //Frase da analizzare, implementare in android due form che contengono
         //rispettivamente la parte sinistra e quella destra del sequente
-        String sx = "(A&(BVC))&(C->(E&D))";
+        
+        String sx = "CVB,(A&(B>C))V(AVB),A";
         String dx = "B&A";
         
         sx = manager.compatta( sx );
+        System.out.println( sx );
+        
+        Pattern pattern = Pattern.compile( "," );
+        Matcher matcher = pattern.matcher( sx );
+        
+        while( matcher.find() ) 
+        {
+            System.out.println( matcher.group() + " " + matcher.start() + " " + matcher.end() );
+        }
+        
+        for( int i = 0; i < 4; i++ )
+        {
+            pattern = Pattern.compile( manager.patternGroup[i] );
+            matcher = pattern.matcher( sx );
+            
+            while( matcher.find() )
+            {
+                switch( i )
+                {
+                    case 0: System.out.println( "Usare la regola della &" );
+                            break;
+                    case 1: System.out.println( "Usare la regola della V" );
+                            break;
+                    case 2: System.out.println( "Usare la regola della -" );
+                            break;
+                    case 3: System.out.println( "Usare la regola della >" );
+                            break;
+                }
+            }
+        }
         
         manager.tableGroup.printAllReference();
-        
-        System.out.println( sx );
     }
 }

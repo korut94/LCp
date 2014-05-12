@@ -10,11 +10,11 @@ package lcputility;
  */
 public class CompactInfo 
 {
-    public char indexTable;
+    public String indexTable;
     public int indexEndGroup;
     
     
-    public CompactInfo( char a, int b )
+    public CompactInfo( String a, int b )
     {
         indexTable = a;
         indexEndGroup = b;

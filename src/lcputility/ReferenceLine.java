@@ -10,12 +10,12 @@ package lcputility;
  */
 public class ReferenceLine 
 {
-    private char index;
+    private int index;
     private String groupPr;
     
     
     
-    public ReferenceLine( char c, String s )
+    public ReferenceLine( int c, String s )
     {
         index = c;
         groupPr = s;
@@ -23,7 +23,7 @@ public class ReferenceLine
     
     
     
-    public char getIndex()
+    public int getIndex()
     {
         return index;
     }
