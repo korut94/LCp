@@ -5,10 +5,10 @@
 package lcp;
 
 
+import java.util.Arrays;
+import java.util.ArrayList;
 import lcputility.CompactInfo;
 import lcputility.ReferenceTable;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 /**
  *
@@ -17,7 +17,13 @@ import java.util.regex.Matcher;
 public class LCp 
 {   
     private ReferenceTable tableGroup;
-    private String[] patternGroup;
+    
+    
+    
+    public LCp()
+    {
+        tableGroup = new ReferenceTable( 20 );
+    }
     
     
     
@@ -61,6 +67,122 @@ public class LCp
     
     
     
+    public void printAllReference()
+    {
+        tableGroup.printAllReference();
+    }
+    
+    
+    
+    public void solve( ArrayList<String> listSx, ArrayList<String> listDx )
+    {
+        System.out.println( "solve" );
+        
+        if( isAxiomIdentity( listSx, listDx ) )
+        {
+            System.out.println( "Assioma identita" );
+        }
+        
+        else
+        {
+            int lastElemSx = listSx.size() - 1;
+            
+            //Stringa di servizio
+            String derElem = new String();
+            
+            //Le regole sono ordinate in ordine crescente al numero di
+            //premesse che genera
+            
+            //Applicata regola & sinistra
+            if( listSx.get( lastElemSx ).contains( "&" ) )
+            {
+                //Faccio il pop della stringa 
+                derElem = listSx.remove( lastElemSx );
+                //La modifico applicando la regola della &
+                derElem = derElem.replace( "&", "," ) ;
+                //La rinserisco nella lista
+                listSx.add( derElem );
+                
+                System.out.println( listSx.get( lastElemSx ) );
+            }
+            
+            //Applicata la regola v destra
+            else if( listDx.get( 0 ).contains( "v" )  )
+            {
+                //Faccio il push della stringa 
+                derElem = listDx.remove( 0 );
+                //La modifico applicando la regola della v
+                derElem = derElem.replace( "v", "," );
+                //La rinserisco nella lista
+                listDx.add( 0, derElem );
+                
+                System.out.println( listDx.get( 0 ) );
+            }
+            
+            //Applicata la regola del - sinistra
+            else if( listSx.get( lastElemSx ).contains( "-" ) )
+            {
+                //Faccio il pop della stringa dalla lista di sinistra
+                derElem = listSx.remove( lastElemSx );
+                //Tolgo il segno di negato
+                derElem = derElem.substring( 1 );
+                //La porto nella lista di destra mettendola all'inizio
+                listDx.add( 0, derElem );
+                
+                System.out.println( listDx.get( 0 ) );
+            }
+            
+            //Applicata la regola del - destra
+            else if( listDx.get( 0 ).contains( "-" ) )
+            {
+                //Faccio la pop della stringa dalla lista di destra
+                derElem = listDx.remove( 0 );
+                //Tolgo il segno di negato
+                derElem = derElem.substring( 1 );
+                //La port nella lista di sinistra facendo il push
+                listSx.add( derElem );
+                
+                System.out.println( listSx.get( lastElemSx + 1 ) );
+            }
+            
+            //Applicata la regola del > destra
+            else if( listDx.get( 0 ).contains( ">" ) )
+            {
+                //Faccio il pop della string dalla lista di destra
+                derElem = listDx.remove( 0 );
+                //Faccio lo split della stringa per ottenere i parametri A e B
+                //dell'implica
+                String[] splitImpl = derElem.split( ">" );
+                
+                //Il parametro A lo pusciamo nella lista di sinistra
+                listSx.add( splitImpl[0] );
+                //Il parametro B lo inseriamo all'inizio della lista di destra
+                listDx.add( 0, splitImpl[1] );
+                
+                System.out.println( listSx.get( lastElemSx + 1 ) + " " + listDx.get( 0 ) );
+            }
+        }
+    }
+    
+    
+    
+    private boolean isAxiomIdentity( ArrayList<String> arraySx, ArrayList<String> arrayDx )
+    {
+        boolean foundMatch = false;
+        
+        for( int i = 0; i < arraySx.size() && !foundMatch; i++ )
+        {
+            for( int j = 0; j < arrayDx.size() && !foundMatch; j++ )
+            {
+                foundMatch = ( arraySx.get(i).equals( arrayDx.get(j) ) );
+            }
+        }
+        
+        return foundMatch;
+    }
+    
+    
+    
     private CompactInfo saveGroup( int start, String pr )
     {
         String compactPr = new String();
@@ -92,64 +214,38 @@ public class LCp
     
     
     
-    private void setPatternGroup()
-    {
-        //Setto l'espressioni regolari che identificano la regola da usare
-        patternGroup[0] = ".&.";
-        patternGroup[1] = ".V.";
-        patternGroup[2] = "-.";
-        patternGroup[3] = ".>.";
-    }
-    
-    
-    
     public static void main( String[] args ) 
     {
         LCp manager = new LCp();
-
-        manager.tableGroup = new ReferenceTable( 20 );
-        manager.patternGroup = new String[ 4 ];
         
-        manager.setPatternGroup();
-                
         //Frase da analizzare, implementare in android due form che contengono
         //rispettivamente la parte sinistra e quella destra del sequente
-        
-        String sx = "CVB,(A&(B>C))V(AVB),A";
-        String dx = "B&A";
+        String sx = "((AvB)>(C&D))v(B>C)";
+        String dx = "A>B";
         
         sx = manager.compatta( sx );
+        dx = manager.compatta( dx );
+        
+        System.out.println( "main" );
         System.out.println( sx );
+        System.out.println( dx );
+        System.out.println( "-----------" );
         
-        Pattern pattern = Pattern.compile( "," );
-        Matcher matcher = pattern.matcher( sx );
+        //Se non ci fosse la virgola nella stringa sorgente sx lo split
+        //ritornera esattamente sx. In quel caso la lunghezza dell'array 
+        //sarebbe 1 e quindi ogni riferimento all'ultimo elemento coinciderebbe
+        //con l'unico presente.
+        String[] elemPrSx = sx.split( "," );
+        String[] elemPrDx = dx.split( "," );
         
-        while( matcher.find() ) 
-        {
-            System.out.println( matcher.group() + " " + matcher.start() + " " + matcher.end() );
-        }
+        //Crea le liste di sinitra e destra di stringhe a partire dall'array 
+        //ottenuto dallo split
+        ArrayList<String> listSx = new ArrayList<String>();
+        listSx.addAll( Arrays.asList( elemPrSx ) );
         
-        for( int i = 0; i < 4; i++ )
-        {
-            pattern = Pattern.compile( manager.patternGroup[i] );
-            matcher = pattern.matcher( sx );
-            
-            while( matcher.find() )
-            {
-                switch( i )
-                {
-                    case 0: System.out.println( "Usare la regola della &" );
-                            break;
-                    case 1: System.out.println( "Usare la regola della V" );
-                            break;
-                    case 2: System.out.println( "Usare la regola della -" );
-                            break;
-                    case 3: System.out.println( "Usare la regola della >" );
-                            break;
-                }
-            }
-        }
+        ArrayList<String> listDx = new ArrayList<String>();
+        listDx.addAll( Arrays.asList( elemPrDx ) );
         
-        manager.tableGroup.printAllReference();
+        manager.solve( listSx, listDx );
     }
 }
