@@ -139,7 +139,7 @@ public class LCp
                 derElem = listDx.remove( 0 );
                 //Tolgo il segno di negato
                 derElem = derElem.substring( 1 );
-                //La port nella lista di sinistra facendo il push
+                //La porto nella lista di sinistra facendo il push
                 listSx.add( derElem );
                 
                 System.out.println( listSx.get( lastElemSx + 1 ) );
@@ -160,6 +160,77 @@ public class LCp
                 listDx.add( 0, splitImpl[1] );
                 
                 System.out.println( listSx.get( lastElemSx + 1 ) + " " + listDx.get( 0 ) );
+            }
+            
+            //Applicata la regola della & destra
+            else if( listDx.get( 0 ).contains( "&" ) )
+            {
+                //Faccio il pop della string della lista di destra
+                derElem = listDx.remove( 0 );
+                //Splitto l'operatore & per ottenere A e B
+                String[] splitE = derElem.split( "&" );
+                
+                //Inserisco l'operando A nella stringa di destra in modo
+                //da creare il ramo sinistro
+                listDx.add( 0, splitE[0] );
+                
+                //Creo un thread figlio per elaborare il ramo sinistro
+                /* solve( listSx, listDx ); */
+                
+                //Tolgo A per inserire B per creare il ramo destro
+                listDx.remove( 0 );
+                listDx.add( splitE[1] );
+                
+                //Creo un thread figlio per elaborare il ramo destro
+                /* solve( listSx, listDx ); */
+            }
+            
+            //Applicata la regola della v sinistra
+            else if( listSx.get( lastElemSx ).contains( "v" ) )
+            {
+                //Rimuovo l'ultimo elemento della lista di sinistra
+                derElem = listSx.remove( lastElemSx );
+                //Faccio lo split per ottenere A e B dell'operatore v
+                String[] splitV = derElem.split( "v" );
+                
+                //Puscio l'operatore A nella stringa di sinistra in modo
+                //da creare il ramo sinistro
+                listSx.add( splitV[0] );
+                
+                //Creo un thread figlio per elaborare il ramo sinistro
+                /* solve( listSx, listDx ); */
+                
+                //Sostituisco l'operatore A con l'operatore B per creare 
+                //il ramo destro
+                listSx.remove( lastElemSx );
+                listSx.add( splitV[1] );
+                
+                //Creo un thread figlio per elaborare il ramo destro
+                /* solve( listSx, listDx ); */
+            }
+            
+            //Applicata la regola del > sinstra
+            else if( listSx.get( lastElemSx ).contains( ">" ) )
+            {
+                //Rimuovo l'ultimo elemento della stringa di sinistra
+                derElem = listSx.remove( lastElemSx );
+                //Faccio lo split per ottenere A e B dell'operatore >
+                String[] splitImp = derElem.split( ">" );
+                
+                //Inserisco A nella stringa di destra per creare il ramo 
+                //di sinistra
+                listDx.add( 0, splitImp[0] );
+                
+                //Creo un thread figlio per elaborare il ramo sinisto
+                /* solve( listSx, listDx ); */
+                
+                //Tolgo A dalla stringa di destra e puscio B su quella di 
+                //sinista per creare il ramo destro
+                listDx.remove( 0 );
+                listSx.add( splitImp[1] );
+                
+                //Creo un thread figlio per elaborare il ramo destro
+                /* solve( listSx, listDx ); */
             }
         }
     }
