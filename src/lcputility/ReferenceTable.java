@@ -28,6 +28,19 @@ public class ReferenceTable
     
     
     
+    public String getReference( String index )
+    {
+        //Rimuoco i cancelletti che delimitano il numero
+        index = index.substring( 1, index.length() - 1 );
+        //Estrapolo l'intero contenuto
+        int row = Integer.parseInt( index );
+        
+        //Restituisco la stringa referenziata
+        return tableRef[ row ];
+    }
+    
+    
+    
     public String insertReference( String pr )
     {
         if( size == tableRef.length ) addRow();
