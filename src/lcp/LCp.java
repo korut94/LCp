@@ -90,6 +90,22 @@ public class LCp
             //Stringa di servizio
             String derElem = new String();
             
+            //Presente un periodo compatto singolo nella lista di sinistra
+            if( listSx.get( lastElemSx ).matches( "#.#$" ) )
+            {
+                //Decomprimo il periodo e lo inserisco al posto di 
+                //quello compatto
+                listSx.add( tableGroup.getReference( listSx.remove( lastElemSx ) ) );
+            }
+            
+            //Presente un periodo compatto singolo nella lista di destra
+            if( listDx.get( 0 ).matches( "^#.#" ) )
+            {
+                //Decomprimo il periodo e lo inserisco al posto di 
+                //quello compatto
+                listDx.add( 0, tableGroup.getReference( listDx.remove( 0 ) ) );
+            }
+            
             //Le regole sono ordinate in ordine crescente al numero di
             //premesse che genera
             
@@ -98,12 +114,11 @@ public class LCp
             {
                 //Faccio il pop della stringa 
                 derElem = listSx.remove( lastElemSx );
-                //La modifico applicando la regola della &
-                derElem = derElem.replace( "&", "," ) ;
-                //La rinserisco nella lista
-                listSx.add( derElem );
-                
-                System.out.println( listSx.get( lastElemSx ) );
+                //Splitto per ottenere A e B
+                String[] splitE = derElem.split( "&" );
+                //Puscio A e B separati
+                listSx.add( splitE[0] );
+                listSx.add( splitE[1] );
             }
             
             //Applicata la regola v destra
@@ -111,12 +126,13 @@ public class LCp
             {
                 //Faccio il push della stringa 
                 derElem = listDx.remove( 0 );
-                //La modifico applicando la regola della v
-                derElem = derElem.replace( "v", "," );
-                //La rinserisco nella lista
-                listDx.add( 0, derElem );
+                //Splitto per ottenere A e B
+                String[] splitV = derElem.split( "v" );
+                //Rinserisco A e B separati all'inizio della lista
+                listDx.add( 0, splitV[0] );
+                listDx.add( 1, splitV[1] );
                 
-                System.out.println( listDx.get( 0 ) );
+                System.out.println( listDx.get( 0 ) + " " + listDx.get( 1 ) );
             }
             
             //Applicata la regola del - sinistra
@@ -291,8 +307,8 @@ public class LCp
         
         //Frase da analizzare, implementare in android due form che contengono
         //rispettivamente la parte sinistra e quella destra del sequente
-        String sx = "((AvB)>(C&D))v(B>C)";
-        String dx = "A>B";
+        String sx = "(A>(BvC))";
+        String dx = "(Bv(C&S)),C";
         
         sx = manager.compatta( sx );
         dx = manager.compatta( dx );
@@ -300,6 +316,7 @@ public class LCp
         System.out.println( "main" );
         System.out.println( sx );
         System.out.println( dx );
+        manager.printAllReference();
         System.out.println( "-----------" );
         
         //Se non ci fosse la virgola nella stringa sorgente sx lo split
