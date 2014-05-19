@@ -10,16 +10,19 @@ package lcputility;
  */
 public class ReferenceTable 
 {
+    //Numero di righe da agguingere ad ogni chiamata di addRow
+    private int incrementRow;
     //Numero di righe della tabella
     private int size;
     //Tabella dei riferimenti tra singolo carattere e gruppo di proposizioni        
-    private ReferenceLine[] tableRef;
+    private String[] tableRef;
     
     
     
     public ReferenceTable( int numRow )
     {
-        tableRef = new ReferenceLine[ numRow ];
+        tableRef = new String[ numRow ];
+        incrementRow = 10;
         size = 0;
     }
     
@@ -37,7 +40,7 @@ public class ReferenceTable
         if( ind != -1 ) return '#'+Integer.toString( ind )+'#';
         
         //Altrimenti aggiungo alla tabella il riferimento
-        tableRef[ size ] = new ReferenceLine( size, pr );
+        tableRef[ size ] = pr;
         
         String index = '#'+Integer.toString( size )+'#';
         
@@ -55,10 +58,7 @@ public class ReferenceTable
     public void printAllReference()
     {
         for( int i = 0; i < size; i++ ) 
-            System.out.println( tableRef[i].getIndex() + 
-                                " " + 
-                                tableRef[i].getPredicate() 
-                              );
+            System.out.println( i + " " + tableRef[i] );
     }
     
     
@@ -71,12 +71,12 @@ public class ReferenceTable
         while( i < size && !found ) 
         {
             //Trovato e mantengo la posizione in cui l'ho trovato
-            if( tableRef[i].getPredicate().equals( pr ) ) found = true;
+            if( tableRef[i].equals( pr ) ) found = true;
             //Continuo a cercarlo
             else i++;
         }
         
-        if( found ) return tableRef[i].getIndex();
+        if( found ) return i;
         else return -1;
     }
     
@@ -84,7 +84,7 @@ public class ReferenceTable
     
     private void addRow()
     {
-        ReferenceLine[] tempTable = new ReferenceLine[ 2*size ];
+        String[] tempTable = new String[ size + incrementRow ];
         
         System.arraycopy( tableRef, 0, tempTable, 0, size );
         
