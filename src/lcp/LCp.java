@@ -248,6 +248,48 @@ public class LCp
                 //Creo un thread figlio per elaborare il ramo destro
                 /* solve( listSx, listDx ); */
             }
+            
+            //Non potendo applicare nessuna regola di derivazione possiamo 
+            //essere in due casi: ci sono proposizioni compresse in altri punti
+            //della lista oppure siamo arrivati ad una foglia senza assioma
+            
+            //Proposizioni compresse, usiamo la regola dello scambio e 
+            //continuiamo
+            int pos = presentOperand( listSx, 0, lastElemSx );
+            //Nessun nuovo operando o periodo compatto trovato a sinistra
+            if( pos == -1 && listDx.size() > 0 )
+            {
+                pos = presentOperand( listDx, 1, listDx.size() );
+                
+                //Nessun nuovo operando o periodo compatto trovato a destra
+                //e a sinistra. Siamo in presenza di una foglia senza assiomi
+                if( pos == -1 ) writeLeaf( listSx, listDx );
+                
+                //Altrimenti applico lo scambio a destra
+                else
+                {
+                    //Copio la stringa in posizione pos della lista
+                    derElem = listDx.get( pos );
+                    //La sostituisco con quella in posizione 0
+                    listDx.set( pos, listDx.get( 0 ) );
+                    //La setto in posizione 0
+                    listDx.set( 0, derElem );
+                }
+            }
+            //Applicato la regola dello scambio a sinistra
+            else if( pos != -1 )
+            {
+                //Copio la stringa in posizione pos della lista
+                derElem = listSx.get( pos );
+                //La sostituisco con quella in fondo
+                listSx.set( pos, listSx.get( lastElemSx ) );
+                //La setto alla fine della lista
+                listSx.set( lastElemSx, derElem );
+            }
+            
+            //Nessun nuovo operando o periodo compatto trovato a destra.
+           //Siamo in presenza di una foglia senza assiomi
+            else writeLeaf( listSx, listDx );
         }
     }
     
@@ -301,6 +343,24 @@ public class LCp
     
     
     
+    private int presentOperand( ArrayList<String> list, int start, int end )
+    {
+        int pos = start;
+        boolean present = false;
+            
+        //Controlliamo nella stringa
+        while( pos < end && !present )
+        {
+            present = list.get( pos ).matches( "[&v->#]" );
+            pos++;
+        }
+            
+        if( present ) return pos;
+        else return -1;
+    }
+    
+    
+    
     public static void main( String[] args ) 
     {
         LCp manager = new LCp();
@@ -308,7 +368,7 @@ public class LCp
         //Frase da analizzare, implementare in android due form che contengono
         //rispettivamente la parte sinistra e quella destra del sequente
         String sx = "(A>(BvC))";
-        String dx = "(Bv(C&S)),C";
+        String dx = "(A&B)v(B&A),C";
         
         sx = manager.compatta( sx );
         dx = manager.compatta( dx );
