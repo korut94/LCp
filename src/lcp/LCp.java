@@ -287,8 +287,7 @@ public class LCp
                 listSx.set( lastElemSx, derElem );
             }
             
-            //Nessun nuovo operando o periodo compatto trovato a destra.
-           //Siamo in presenza di una foglia senza assiomi
+            //Lista destra vuota
             else writeLeaf( listSx, listDx );
         }
     }
