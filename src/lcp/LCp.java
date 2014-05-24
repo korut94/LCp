@@ -7,22 +7,28 @@ package lcp;
 
 import java.util.Arrays;
 import java.util.ArrayList;
-import lcputility.CompactInfo;
-import lcputility.ReferenceTable;
+import lcputility.*;
 
 /**
  *
  * @author amantova
  */
-public class LCp 
+public class LCp implements Runnable
 {   
+    private int indexLeaf;
     private ReferenceTable tableGroup;
+    private Solve solve;
     
+    private String[][][] tableLeaf;
+ 
     
     
     public LCp()
     {
         tableGroup = new ReferenceTable( 20 );
+        tableLeaf = new String[20][2][];
+        
+        indexLeaf = 0;
     }
     
     
@@ -70,6 +76,13 @@ public class LCp
     public void printAllReference()
     {
         tableGroup.printAllReference();
+    }
+    
+    
+    
+    public void run()
+    {
+        
     }
     
     
@@ -360,6 +373,18 @@ public class LCp
     
     
     
+    private void writeLeaf( ArrayList<String> sx, ArrayList<String> dx )
+    {
+        synchronized( this )
+        {
+            tableLeaf[ indexLeaf ][0] = sx.toArray( tableLeaf[ indexLeaf ][0] );
+            tableLeaf[ indexLeaf ][1] = dx.toArray( tableLeaf[ indexLeaf ][1] );
+            indexLeaf++;
+        }
+    }
+    
+    
+    
     public static void main( String[] args ) 
     {
         LCp manager = new LCp();
@@ -371,6 +396,8 @@ public class LCp
         
         sx = manager.compatta( sx );
         dx = manager.compatta( dx );
+        
+        manager.solve = new Solve( sx, dx );
         
         System.out.println( "main" );
         System.out.println( sx );
