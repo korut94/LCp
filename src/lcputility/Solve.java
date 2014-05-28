@@ -203,6 +203,22 @@ public class Solve implements Runnable
         
         while( !isLeaf )
         {
+            //Per evitare errori di overflow dell'array e correttezza nei confronti
+            //della logica, una lista non deve essere mai vuota. Il % indica il 
+            //vero mentre @ indica il falso
+            if( listSx.isEmpty() ) listSx.add( "%" );
+            else if( listSx.size() == 1 && listSx.get( 0 ).equals( "" ) )
+            {
+                listSx.set( 0, "%" );
+            }
+        
+            if( listDx.isEmpty() ) listSx.add( "@" );
+            else if( listDx.size() == 1 && listDx.get( 0 ).equals( "" ) ) 
+            {
+                listDx.set( 0, "@" );
+            }
+            
+            
             System.out.println( listSx.toString() + "|-" + listDx.toString() );
             
             int lastElemSx = listSx.size() - 1;
