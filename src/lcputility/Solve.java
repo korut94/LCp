@@ -15,8 +15,8 @@ import java.util.Arrays;
  */
 public class Solve implements Runnable
 {
-    private ArrayList<String> listDx;
-    private ArrayList<String> listSx;
+    private ArrayList<String> predicateDx;
+    private ArrayList<String> predicateSx;
     
     private int indexLeaf;
     
@@ -49,13 +49,13 @@ public class Solve implements Runnable
         
         //Crea le liste di sinitra e destra di stringhe a partire dall'array 
         //ottenuto dallo split
-        listSx = new ArrayList<String>();
-        listSx.addAll( Arrays.asList( elemPrSx ) );
+        predicateSx = new ArrayList<String>();
+        predicateSx.addAll( Arrays.asList( elemPrSx ) );
         
-        listDx = new ArrayList<String>();
-        listDx.addAll( Arrays.asList( elemPrDx ) );
+        predicateDx = new ArrayList<String>();
+        predicateDx.addAll( Arrays.asList( elemPrDx ) );
         
-        derThree( listSx, listDx );
+        derThree( predicateSx, predicateDx );
     }
     
     
@@ -199,8 +199,6 @@ public class Solve implements Runnable
     
     private void derThree( ArrayList<String> listSx, ArrayList<String> listDx )
     {
-        System.out.println( "solve" );
-        
         boolean isLeaf = false;
         
         while( !isLeaf )
@@ -381,10 +379,10 @@ public class Solve implements Runnable
                     //Nessun nuovo operando o periodo compatto trovato a destra
                     //e a sinistra. Siamo in presenza di una foglia senza assiomi
                     if( pos == -1 )
-                    {/*
+                    {
                         if( !isAxiomIdentity( listSx, listDx ) )
                             writeLeaf( listSx, listDx );
-                        */
+                        
                         isLeaf = true;
                     }
                 
@@ -412,10 +410,10 @@ public class Solve implements Runnable
             
                 //Lista destra vuota
                 else 
-                {/*
-                    if( !isAxiomIdentity( listSx, listDx ) )
+                {
+                    if( !isAxiomIdentity( listSx, listDx ) ) 
                         writeLeaf( listSx, listDx );
-                    */
+                    
                     isLeaf = true;
                 }
             }
@@ -433,8 +431,12 @@ public class Solve implements Runnable
     
     private synchronized void writeLeaf( ArrayList<String> sx, ArrayList<String> dx )
     {
+        tableLeaf[ indexLeaf ][0] = new String[ sx.size() ];
+        tableLeaf[ indexLeaf ][1] = new String[ dx.size() ];
+        
         tableLeaf[ indexLeaf ][0] = sx.toArray( tableLeaf[ indexLeaf ][0] );
         tableLeaf[ indexLeaf ][1] = dx.toArray( tableLeaf[ indexLeaf ][1] );
+        
         indexLeaf++;
     }
 }
