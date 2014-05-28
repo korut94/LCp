@@ -342,20 +342,17 @@ public class Solve implements Runnable
                 //Faccio lo split per ottenere A e B dell'operatore v
                 String[] splitV = derElem.split( "v" );
                 
+                //Creo il ramo destro
+                indexSequent++;
+                sequents[ indexSequent ] = new Predicate( listSx, listDx );
+                sequents[ indexSequent ].prSx.add( splitV[1] );
+                
+                Thread tDx = new Thread( this );
+                tDx.start();
+                
                 //Puscio l'operatore A nella stringa di sinistra in modo
                 //da creare il ramo sinistro
                 listSx.add( splitV[0] );
-                
-                //Creo un thread figlio per elaborare il ramo sinistro
-                /* solve( listSx, listDx ); */
-                
-                //Sostituisco l'operatore A con l'operatore B per creare 
-                //il ramo destro
-                listSx.remove( lastElemSx );
-                listSx.add( splitV[1] );
-                
-                //Creo un thread figlio per elaborare il ramo destro
-                /* solve( listSx, listDx ); */
             }
             
             //Applicata la regola del > sinstra
@@ -366,20 +363,18 @@ public class Solve implements Runnable
                 //Faccio lo split per ottenere A e B dell'operatore >
                 String[] splitImp = derElem.split( ">" );
                 
+                //Creo il ramo destro
+                indexSequent++;
+                sequents[ indexSequent ] = new Predicate( listSx, listDx );
+                sequents[ indexSequent ].prSx.add( splitImp[1] );
+                
+                Thread tDx = new Thread( this );
+                tDx.start();
+                
+                
                 //Inserisco A nella stringa di destra per creare il ramo 
                 //di sinistra
                 listDx.add( 0, splitImp[0] );
-                
-                //Creo un thread figlio per elaborare il ramo sinisto
-                /* solve( listSx, listDx ); */
-                
-                //Tolgo A dalla stringa di destra e puscio B su quella di 
-                //sinista per creare il ramo destro
-                listDx.remove( 0 );
-                listSx.add( splitImp[1] );
-                
-                //Creo un thread figlio per elaborare il ramo destro
-                /* solve( listSx, listDx ); */
             }
             
             //Non potendo applicare nessuna regola di derivazione possiamo 
