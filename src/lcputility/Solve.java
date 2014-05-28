@@ -55,6 +55,8 @@ public class Solve implements Runnable
         predicateDx = new ArrayList<String>();
         predicateDx.addAll( Arrays.asList( elemPrDx ) );
         
+        printAllReference();
+        
         derThree( predicateSx, predicateDx );
     }
     
@@ -212,7 +214,7 @@ public class Solve implements Runnable
                 listSx.set( 0, "%" );
             }
         
-            if( listDx.isEmpty() ) listSx.add( "@" );
+            if( listDx.isEmpty() ) listDx.add( "@" );
             else if( listDx.size() == 1 && listDx.get( 0 ).equals( "" ) ) 
             {
                 listDx.set( 0, "@" );
