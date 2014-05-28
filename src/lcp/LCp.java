@@ -16,11 +16,11 @@ public class LCp
     {
         //Frase da analizzare, implementare in android due form che contengono
         //rispettivamente la parte sinistra e quella destra del sequente
-        String sx = "(A>(BvC))";
-        String dx = "(A&B)v(B&A),C";
+        String sx = "(A&B)&(-C&A)";
+        String dx = "(A>B)vB,(-CvA)";
         
         Solve solve = new Solve( sx, dx );
         
-        String[][][] three = solve.threeLeaf();
+        //String[][][] three = solve.threeLeaf();
     }
 }

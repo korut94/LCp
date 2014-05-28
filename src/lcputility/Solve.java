@@ -35,6 +35,8 @@ public class Solve implements Runnable
         tableGroup = new ReferenceTable( 20 );
         tableLeaf = new String[20][2][];
         
+        indexLeaf = 0;
+        
         sx = compatta( sx );
         dx = compatta( dx );
         
@@ -52,6 +54,8 @@ public class Solve implements Runnable
         
         listDx = new ArrayList<String>();
         listDx.addAll( Arrays.asList( elemPrDx ) );
+        
+        derThree( listSx, listDx );
     }
     
     
@@ -65,6 +69,25 @@ public class Solve implements Runnable
     
     public void run()
     {
+    }
+    
+    
+    
+    private boolean foundOperand( String s )
+    {
+        boolean found = false;
+        char op;
+        
+        //Cerco nella stringa passata gli operatori
+        for( int i = 0; i < s.length() && !found; i++ )
+        {
+            op = s.charAt( i );
+            
+            found = ( op == '&' || op == 'v' || op == '-' ||
+                      op == '>' || op == '#' );
+        }
+            
+        return found;
     }
     
     
@@ -122,10 +145,9 @@ public class Solve implements Runnable
         int pos = start;
         boolean present = false;
             
-        //Controlliamo nella stringa
-        while( pos < end && !present )
+        //Controlliamo nella lista se una proposizione contiene altri operatori
+        while( pos < end && !( present = foundOperand( list.get( pos ) ) ) ) 
         {
-            present = list.get( pos ).matches( "[&v->#]" );
             pos++;
         }
             
@@ -183,6 +205,8 @@ public class Solve implements Runnable
         
         while( !isLeaf )
         {
+            System.out.println( listSx.toString() + "|-" + listDx.toString() );
+            
             int lastElemSx = listSx.size() - 1;
             
             //Stringa di servizio
@@ -229,8 +253,6 @@ public class Solve implements Runnable
                 //Rinserisco A e B separati all'inizio della lista
                 listDx.add( 0, splitV[0] );
                 listDx.add( 1, splitV[1] );
-                
-                System.out.println( listDx.get( 0 ) + " " + listDx.get( 1 ) );
             }
             
             //Applicata la regola del - sinistra
@@ -242,8 +264,6 @@ public class Solve implements Runnable
                 derElem = derElem.substring( 1 );
                 //La porto nella lista di destra mettendola all'inizio
                 listDx.add( 0, derElem );
-                
-                System.out.println( listDx.get( 0 ) );
             }
             
             //Applicata la regola del - destra
@@ -255,8 +275,6 @@ public class Solve implements Runnable
                 derElem = derElem.substring( 1 );
                 //La porto nella lista di sinistra facendo il push
                 listSx.add( derElem );
-                
-                System.out.println( listSx.get( lastElemSx + 1 ) );
             }
             
             //Applicata la regola del > destra
@@ -272,8 +290,6 @@ public class Solve implements Runnable
                 listSx.add( splitImpl[0] );
                 //Il parametro B lo inseriamo all'inizio della lista di destra
                 listDx.add( 0, splitImpl[1] );
-                
-                System.out.println( listSx.get( lastElemSx + 1 ) + " " + listDx.get( 0 ) );
             }
             
             //Applicata la regola della & destra
@@ -356,18 +372,19 @@ public class Solve implements Runnable
                 //Proposizioni compresse, usiamo la regola dello scambio e 
                 //continuiamo
                 int pos = presentOperand( listSx, 0, lastElemSx );
+                
                 //Nessun nuovo operando o periodo compatto trovato a sinistra
                 if( pos == -1 && listDx.size() > 0 )
                 {
                     pos = presentOperand( listDx, 1, listDx.size() );
-                
+                    
                     //Nessun nuovo operando o periodo compatto trovato a destra
                     //e a sinistra. Siamo in presenza di una foglia senza assiomi
                     if( pos == -1 )
-                    {
+                    {/*
                         if( !isAxiomIdentity( listSx, listDx ) )
                             writeLeaf( listSx, listDx );
-                        
+                        */
                         isLeaf = true;
                     }
                 
@@ -395,10 +412,10 @@ public class Solve implements Runnable
             
                 //Lista destra vuota
                 else 
-                {
+                {/*
                     if( !isAxiomIdentity( listSx, listDx ) )
                         writeLeaf( listSx, listDx );
-                    
+                    */
                     isLeaf = true;
                 }
             }
