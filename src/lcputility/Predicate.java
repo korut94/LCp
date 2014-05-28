@@ -1,0 +1,37 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package lcputility;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ *
+ * @author amantova
+ */
+public class Predicate 
+{
+    public ArrayList<String> prSx;
+    public ArrayList<String> prDx;
+    
+    public Predicate( ArrayList<String> sx, ArrayList<String> dx )
+    {
+        prSx = new ArrayList<String>();
+        prDx = new ArrayList<String>();
+        
+        prSx.addAll( sx );
+        prDx.addAll( dx );
+    }
+    
+    public Predicate( List<String> sx, List<String> dx )
+    {
+        prSx = new ArrayList<String>();
+        prDx = new ArrayList<String>();
+        
+        prSx.addAll( sx );
+        prDx.addAll( dx );
+    }
+}

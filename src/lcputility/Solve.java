@@ -15,10 +15,11 @@ import java.util.Arrays;
  */
 public class Solve implements Runnable
 {
-    private ArrayList<String> predicateDx;
-    private ArrayList<String> predicateSx;
+    private Predicate[] sequents;
     
     private int indexLeaf;
+    //L'indice sara equivalente al numero del thread che lavora al sequente
+    private int indexSequent;
     
     private ReferenceTable tableGroup;
     
@@ -35,7 +36,11 @@ public class Solve implements Runnable
         tableGroup = new ReferenceTable( 20 );
         tableLeaf = new String[20][2][];
         
+        sequents = new Predicate[20];
+        
         indexLeaf = 0;
+        //La chiamata dal main ha indice 0
+        indexSequent = 0;
         
         sx = compatta( sx );
         dx = compatta( dx );
@@ -49,21 +54,15 @@ public class Solve implements Runnable
         
         //Crea le liste di sinitra e destra di stringhe a partire dall'array 
         //ottenuto dallo split
-        predicateSx = new ArrayList<String>();
-        predicateSx.addAll( Arrays.asList( elemPrSx ) );
-        
-        predicateDx = new ArrayList<String>();
-        predicateDx.addAll( Arrays.asList( elemPrDx ) );
-        
-        printAllReference();
-        
-        derThree( predicateSx, predicateDx );
+        sequents[0] = new Predicate( Arrays.asList( elemPrSx ), 
+                                     Arrays.asList( elemPrDx ) );
     }
     
     
     
     public String[][][] threeLeaf()
     {
+        run();
         return tableLeaf;
     }
     
@@ -71,6 +70,8 @@ public class Solve implements Runnable
     
     public void run()
     {
+        derThree( sequents[ indexSequent ].prSx, 
+                  sequents[ indexSequent ].prDx );
     }
     
     
@@ -202,6 +203,7 @@ public class Solve implements Runnable
     private void derThree( ArrayList<String> listSx, ArrayList<String> listDx )
     {
         boolean isLeaf = false;
+        int indexTh = indexSequent;
         
         while( !isLeaf )
         {
@@ -221,7 +223,10 @@ public class Solve implements Runnable
             }
             
             
-            System.out.println( listSx.toString() + "|-" + listDx.toString() );
+            
+            System.out.println( listSx.toString() + "|-" + listDx.toString() + " " + indexTh );
+            
+            
             
             int lastElemSx = listSx.size() - 1;
             
@@ -316,19 +321,17 @@ public class Solve implements Runnable
                 //Splitto l'operatore & per ottenere A e B
                 String[] splitE = derElem.split( "&" );
                 
+                //Creo il ramo destro
+                indexSequent++;
+                sequents[ indexSequent ] = new Predicate( listSx, listDx );
+                sequents[ indexSequent ].prDx.add( 0, splitE[1] );
+                
+                Thread tDx = new Thread( this );
+                tDx.start();
+                
                 //Inserisco l'operando A nella stringa di destra in modo
                 //da creare il ramo sinistro
                 listDx.add( 0, splitE[0] );
-                
-                //Creo un thread figlio per elaborare il ramo sinistro
-                /* solve( listSx, listDx ); */
-                
-                //Tolgo A per inserire B per creare il ramo destro
-                listDx.remove( 0 );
-                listDx.add( splitE[1] );
-                
-                //Creo un thread figlio per elaborare il ramo destro
-                /* solve( listSx, listDx ); */
             }
             
             //Applicata la regola della v sinistra
@@ -436,13 +439,6 @@ public class Solve implements Runnable
                 }
             }
         }
-    }
-    
-    
-    
-    public void printAllReference()
-    {
-        tableGroup.printAllReference();
     }
     
     
