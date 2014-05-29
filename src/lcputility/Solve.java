@@ -17,7 +17,6 @@ public class Solve implements Runnable
 {
     private boolean reader;
     
-    private int indexLeaf;
     //L'indice sara equivalente al numero del thread che lavora al sequente
     private int indexSequent;
     
@@ -25,30 +24,21 @@ public class Solve implements Runnable
     
     private ReferenceTable tableGroup;
     
-    //1° parametro indice della foglia dell'albero
-    //2° parametro sequente sinistro o destro
-    //3° parametro indice delle proposizione che compongono il sequente
-    //specificato
-    private String[][][] tableLeaf;
-    
-    
+   
     
     public Solve( String sx, String dx )
     {
         tableGroup = new ReferenceTable( 20 );
-        tableLeaf = new String[20][2][];
-        
         sequents = new Predicate[20];
         
-        indexLeaf = 0;
         //La chiamata dal main ha indice 0
         indexSequent = 0;
         
-        sx = "%," + sx;
-        dx = dx + ",@";
-        
-        sx = compatta( sx );
-        dx = compatta( dx );
+        //Per evitare errori di overflow dell'array e correttezza nei confronti
+        //della logica, una lista non deve essere mai vuota. Il % indica il 
+        //vero mentre @ indica il falso
+        sx = "%," + compatta( sx );
+        dx = compatta( dx ) + ",@";
         
         //Se non ci fosse la virgola nella stringa sorgente sx lo split
         //ritornera esattamente sx. In quel caso la lunghezza dell'array 
@@ -69,10 +59,10 @@ public class Solve implements Runnable
     
     
     
-    public String[][][] threeLeaf()
+    public Predicate[] threeLeaf()
     {
         run();
-        return tableLeaf;
+        return sequents;
     }
     
     
@@ -232,26 +222,7 @@ public class Solve implements Runnable
         
         while( !isLeaf )
         {
-            //Per evitare errori di overflow dell'array e correttezza nei confronti
-            //della logica, una lista non deve essere mai vuota. Il % indica il 
-            //vero mentre @ indica il falso
-            if( listSx.isEmpty() ) listSx.add( "%" );
-            else if( listSx.size() == 1 && listSx.get( 0 ).equals( "" ) )
-            {
-                listSx.set( 0, "%" );
-            }
-        
-            if( listDx.isEmpty() ) listDx.add( "@" );
-            else if( listDx.size() == 1 && listDx.get( 0 ).equals( "" ) ) 
-            {
-                listDx.set( 0, "@" );
-            }
-            
-            
-            
             System.out.println( listSx.toString() + "|-" + listDx.toString() + " " + indexTh );
-            
-            
             
             int lastElemSx = listSx.size() - 1;
             
@@ -445,9 +416,6 @@ public class Solve implements Runnable
                     //e a sinistra. Siamo in presenza di una foglia senza assiomi
                     if( pos == -1 )
                     {
-                        if( !isAxiomIdentity( listSx, listDx ) )
-                            writeLeaf( listSx, listDx );
-                        
                         isLeaf = true;
                         
                         while( !threads.isEmpty() )
@@ -483,9 +451,6 @@ public class Solve implements Runnable
                 //Lista destra vuota
                 else 
                 {
-                    if( !isAxiomIdentity( listSx, listDx ) ) 
-                        writeLeaf( listSx, listDx );
-                    
                     isLeaf = true;
                     
                     while( !threads.isEmpty() )
@@ -497,18 +462,5 @@ public class Solve implements Runnable
                 }
             }
         }
-    }
-    
-    
-    
-    private synchronized void writeLeaf( ArrayList<String> sx, ArrayList<String> dx )
-    {
-        tableLeaf[ indexLeaf ][0] = new String[ sx.size() ];
-        tableLeaf[ indexLeaf ][1] = new String[ dx.size() ];
-        
-        tableLeaf[ indexLeaf ][0] = sx.toArray( tableLeaf[ indexLeaf ][0] );
-        tableLeaf[ indexLeaf ][1] = dx.toArray( tableLeaf[ indexLeaf ][1] );
-        
-        indexLeaf++;
     }
 }

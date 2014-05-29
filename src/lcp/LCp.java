@@ -16,8 +16,8 @@ public class LCp
     {
         //Frase da analizzare, implementare in android due form che contengono
         //rispettivamente la parte sinistra e quella destra del sequente
-        String sx = "(-(C&(A&C)))&(A&B)";
-        String dx = "A>B";
+        String sx = "";
+        String dx = "-((P>Q)>(Q>P))";
         
         Solve solve = new Solve( sx, dx );
         
