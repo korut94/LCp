@@ -34,4 +34,11 @@ public class Predicate
         prSx.addAll( sx );
         prDx.addAll( dx );
     }
+    
+    
+    
+    public void printPredicate()
+    {
+        System.out.println( prSx.toString() + "|-" + prDx.toString() );
+    }
 }
