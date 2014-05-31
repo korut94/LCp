@@ -8,6 +8,7 @@ package lcputility;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Stack;
 
 /**
  *
@@ -62,6 +63,10 @@ public class Solve implements Runnable
     public Predicate[] threeLeaf()
     {
         run();
+        
+        for( int i = 0; i < indexSequent + 1; i++ )
+            sequents[ i ].printPredicate();
+        
         return sequents;
     }
     
@@ -213,16 +218,13 @@ public class Solve implements Runnable
     private void derThree( ArrayList<String> listSx, ArrayList<String> listDx )
     {
         boolean isLeaf = false;
-        int indexTh = indexSequent;
         
-        ArrayList<Thread> threads = new ArrayList<Thread>();
-        
-        //Aggiungo il thread per il ramo destro
-        threads.add( new Thread( this ) );
+        //Pila dei rami che genera la derivazione
+        Stack<Thread> threads = new Stack<Thread>();
         
         while( !isLeaf )
         {
-            System.out.println( listSx.toString() + "|-" + listDx.toString() + " " + indexTh );
+            //System.out.println( listSx.toString() + "|-" + listDx.toString() + " " + indexTh );
             
             int lastElemSx = listSx.size() - 1;
             
@@ -317,6 +319,9 @@ public class Solve implements Runnable
                 //Splitto l'operatore & per ottenere A e B
                 String[] splitE = derElem.split( "&" );
                 
+                //Creo il thread per il ramo destro
+                Thread trDxE = new Thread( this );
+                
                 synchronized( this )
                 {
                     try{ if( reader ) wait(); }
@@ -330,9 +335,12 @@ public class Solve implements Runnable
                     sequents[ indexSequent ] = new Predicate( listSx, listDx );
                     sequents[ indexSequent ].prDx.add( 0, splitE[1] );
                     
-                    threads.get( threads.size() - 1 ).start();
+                    trDxE.start();
                 }
                 
+                //Puscio il thread nello stack per eseguire la join 
+                //successivamente
+                threads.push( trDxE );
                 
                 //Inserisco l'operando A nella stringa di destra in modo
                 //da creare il ramo sinistro
@@ -347,6 +355,9 @@ public class Solve implements Runnable
                 //Faccio lo split per ottenere A e B dell'operatore v
                 String[] splitV = derElem.split( "v" );
                 
+                //Creo il thread per il ramo destro
+                Thread trDxV = new Thread( this );
+                
                 synchronized( this )
                 {
                     try{ if( reader ) wait(); }
@@ -360,8 +371,12 @@ public class Solve implements Runnable
                     sequents[ indexSequent ] = new Predicate( listSx, listDx );
                     sequents[ indexSequent ].prSx.add( splitV[1] );
                 
-                    threads.get( threads.size() - 1 ).start();
+                    trDxV.start();
                 }
+                
+                //Puscio il thread nello stack per eseguire la join 
+                //successivamente
+                threads.push( trDxV );
                 
                 //Puscio l'operatore A nella stringa di sinistra in modo
                 //da creare il ramo sinistro
@@ -376,6 +391,9 @@ public class Solve implements Runnable
                 //Faccio lo split per ottenere A e B dell'operatore >
                 String[] splitImp = derElem.split( ">" );
                 
+                //Creo il thread per il ramo destro
+                Thread trDxImp = new Thread( this );
+                
                 synchronized( this )
                 {
                     try{ if( reader ) wait(); }
@@ -389,8 +407,12 @@ public class Solve implements Runnable
                     sequents[ indexSequent ] = new Predicate( listSx, listDx );
                     sequents[ indexSequent ].prSx.add( splitImp[1] );
                 
-                    threads.get( threads.size() - 1 ).start();
+                    trDxImp.start();
                 }
+                
+                //Puscio il thread nello stack per eseguire la join 
+                //successivamente
+                threads.push( trDxImp );
                 
                 //Inserisco A nella stringa di destra per creare il ramo 
                 //di sinistra
@@ -417,13 +439,8 @@ public class Solve implements Runnable
                     if( pos == -1 )
                     {
                         isLeaf = true;
-                        
-                        while( !threads.isEmpty() )
-                        {
-                            Thread td = threads.remove( threads.size() - 1 );
-                            try{ td.join(); }
-                            catch( Exception e ){}
-                        }
+                        //Attendi che termino gli altri rami
+                        waitThread( threads );
                     }
                 
                     //Altrimenti applico lo scambio a destra
@@ -452,15 +469,22 @@ public class Solve implements Runnable
                 else 
                 {
                     isLeaf = true;
-                    
-                    while( !threads.isEmpty() )
-                    {
-                        Thread td = threads.remove( threads.size() - 1 );
-                        try{ td.join(); }
-                        catch( Exception e ){}
-                    }
+                    //Attendi che termino gli altri rami
+                    waitThread( threads );
                 }
             }
+        }
+    }
+    
+    
+    
+    private void waitThread( Stack<Thread> headerThr )
+    {
+        while( !headerThr.isEmpty() )
+        {
+            Thread td = headerThr.pop();
+            try{ td.join(); }
+            catch( Exception e ){}
         }
     }
 }
