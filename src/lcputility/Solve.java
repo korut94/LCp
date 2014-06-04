@@ -21,9 +21,13 @@ public class Solve implements Runnable
     //L'indice sara equivalente al numero del thread che lavora al sequente
     private int indexSequent;
     
-    private Predicate[] sequents;
+    //Negato del sequente da in input
+    private final Predicate negSequent;
+    //Tabella la quale ogni entry e' il sequente di un ramo. Alla fine conterra'
+    //tutte le foglie dell'albero.
+    private final Predicate[] sequents;
     
-    private ReferenceTable tableGroup;
+    private final ReferenceTable tableGroup;
     
    
     
@@ -35,9 +39,13 @@ public class Solve implements Runnable
         //La chiamata dal main ha indice 0
         indexSequent = 0;
         
+        //Negato del sequente
+        String negative = "-(" + '(' + sx + ')' + '>' + '(' + dx + ')' + ")";
+        negative = compatta( negative ) + ",@";
+        
         //Per evitare errori di overflow dell'array e correttezza nei confronti
         //della logica, una lista non deve essere mai vuota. Il % indica il 
-        //vero mentre @ indica il falso
+        //vero mentre @ indica il falso.
         sx = "%," + compatta( sx );
         dx = compatta( dx ) + ",@";
         
@@ -47,31 +55,107 @@ public class Solve implements Runnable
         //con l'unico presente.
         String[] elemPrSx = sx.split( "," );
         String[] elemPrDx = dx.split( "," );
-        
+        String[] elemNeSx = { "%" };
+        String[] elemNeDx = negative.split( "," );
         //Crea le liste di sinitra e destra di stringhe a partire dall'array 
-        //ottenuto dallo split
+        //ottenuto dallo split.
         sequents[0] = new Predicate( Arrays.asList( elemPrSx ), 
                                      Arrays.asList( elemPrDx ) );
+        //Creo il sequente negato che verrà risolto dopo il sequente originale
+        negSequent = new Predicate( Arrays.asList( elemNeSx ), 
+                                    Arrays.asList( elemNeDx ) );
         
         reader = true;
-        
-        tableGroup.printAllReference();
     }
     
     
     
-    public Predicate[] threeLeaf()
+    public String threeLeaf()
     {
+        //Deriva l'albero utilizzando un thread per ramo
         run();
         
-        for( int i = 0; i < indexSequent + 1; i++ )
-            sequents[ i ].printPredicate();
+        //Numero di foglie raggiunto
+        indexSequent++;
         
-        return sequents;
+        int response = tautology( 0 );
+        
+        //Tutte le foglie sono assiomi
+        if( response == indexSequent ) return "Il sequente e' una tautologia";
+        else
+        {
+            int posNotAxiomSeq = response;
+            
+            int baseNegSequent = indexSequent;
+            sequents[ baseNegSequent ] = negSequent;
+            
+            //Derivo il sequente negato, indexSequent aumentera' in base al 
+            //numero di foglie che sono generate
+            run();
+            
+            //Numero di foglie raggiunto
+            indexSequent++;
+            
+            System.out.println( "Sequente" );
+            
+            for( int i = 0; i < baseNegSequent; i++ )
+            {
+                sequents[i].printPredicate();
+            }
+            
+            System.out.println( "Negato" );
+            
+            for( int i = baseNegSequent; i < indexSequent; i++ )
+            {
+                sequents[i].printPredicate();
+            }
+            
+            //Capire perche' deve decrementare di uno
+            response = tautology( baseNegSequent - 1 );
+            
+            if( response == indexSequent ) 
+            {
+                return "Il sequente e' un paradosso";
+            }
+            
+            else
+            {
+                int posNotAxiomNeg = response;
+                
+                String result = "Il sequente non è valido per: ";
+            
+                ArrayList<String> preSx = sequents[posNotAxiomSeq].prSx;
+                ArrayList<String> preDx = sequents[posNotAxiomSeq].prDx;
+            
+                //Rimuovo il segno '%' dalla lista di sinista e il segno '@' dalla
+                //lista di destra essendo annotazioni superflue da questo punto
+                preSx.remove( 0 );
+                preDx.remove( preDx.size() - 1 );
+            
+                result += atomicVariableSet( preSx, '1' );
+                result += atomicVariableSet( preDx, '0' );
+            
+                result += '\n' + "Il sequente e' soddisfacibile per: ";
+                
+                preSx = sequents[posNotAxiomNeg].prSx;
+                preDx = sequents[posNotAxiomNeg].prDx;
+            
+                //Rimuovo il segno '%' dalla lista di sinista e il segno '@' dalla
+                //lista di destra essendo annotazioni superflue da questo punto
+                preSx.remove( 0 );
+                preDx.remove( preDx.size() - 1 );
+            
+                result += atomicVariableSet( preSx, '1' );
+                result += atomicVariableSet( preDx, '0' );
+                
+                return result;
+            }
+        }
     }
     
     
     
+    @Override
     public void run()
     {
         int index = 0;
@@ -80,7 +164,7 @@ public class Solve implements Runnable
         {
             index = indexSequent;
             reader = false;
-            
+        
             //Sveglio i thread in attesa di andare in esecuzione
             notify();
         }
@@ -174,7 +258,54 @@ public class Solve implements Runnable
     }
     
     
+    /*
+    Tautology restituisce la posizione di dove si e' fermato, se fosse uguale a 
+    indexSequent vuol dire che tutte le foglie sono assiomi, altrimenti e' stata
+    trovata un foglia che non si chiude
+    */
+    private int tautology( int start )
+    {
+        //Lo start indica in quale posizione dell'array inizia l'elenco delle
+        //foglie dell'albero preso in esame
+        boolean foundNotAxiom = !( isAxiomIdentity( sequents[start].prSx, 
+                                                    sequents[start].prDx ) );
+        int indPre = start + 1;
+        
+        //Cerca la prima foglia che non si chiude
+        while( indPre < indexSequent && !foundNotAxiom )
+        {
+            if( !( isAxiomIdentity( sequents[indPre].prSx, 
+                                    sequents[indPre].prDx ) ) )
+            {
+                foundNotAxiom = true;
+            }
+            
+            else indPre++;
+        }
+        
+        return indPre;
+    }
     
+    
+    
+    private String atomicVariableSet( ArrayList<String> variable, char set )
+    {
+        String setting = new String();
+        int cntVar = variable.size();
+        
+        //Il risultato e' la stringa composta dalla variabili atomiche 
+        //contenute in variable con affianco il segno uguale e il valore 
+        //rappresentato da set 
+        for( int i = 0; i < cntVar; i++ ) 
+        {
+            setting += variable.get( i ) + '=' + set + " ";
+        }
+        
+        return setting;
+    }
+    
+    
+            
     private String compatta( String pr )
     {
         int index = 0;
@@ -224,7 +355,7 @@ public class Solve implements Runnable
         
         while( !isLeaf )
         {
-            //System.out.println( listSx.toString() + "|-" + listDx.toString() + " " + indexTh );
+            //System.out.println( listSx.toString() + "|-" + listDx.toString() + " " + indexSequent );
             
             int lastElemSx = listSx.size() - 1;
             
@@ -430,7 +561,7 @@ public class Solve implements Runnable
                 int pos = presentOperand( listSx, 0, lastElemSx );
                 
                 //Nessun nuovo operando o periodo compatto trovato a sinistra
-                if( pos == -1 && listDx.size() > 0 )
+                if( pos == -1 && listDx.size() > 1 )
                 {
                     pos = presentOperand( listDx, 1, listDx.size() );
                     
@@ -454,6 +585,7 @@ public class Solve implements Runnable
                         listDx.set( 0, derElem );
                     }
                 }
+                
                 //Applicato la regola dello scambio a sinistra
                 else if( pos != -1 )
                 {
@@ -484,7 +616,7 @@ public class Solve implements Runnable
         {
             Thread td = headerThr.pop();
             try{ td.join(); }
-            catch( Exception e ){}
+            catch( InterruptedException e ){}
         }
     }
 }

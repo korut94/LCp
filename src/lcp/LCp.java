@@ -16,11 +16,12 @@ public class LCp
     {
         //Frase da analizzare, implementare in android due form che contengono
         //rispettivamente la parte sinistra e quella destra del sequente
-        String sx = "";
-        String dx = "-((P>Q)>(Q>P))";
+        
+        String sx = "((P>C)&(Q>C))vD";
+        String dx = "(PvQ)>C";
         
         Solve solve = new Solve( sx, dx );
         
-        solve.threeLeaf();
+        System.out.println( solve.threeLeaf() );
     }
 }

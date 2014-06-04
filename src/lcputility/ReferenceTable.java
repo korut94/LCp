@@ -11,7 +11,7 @@ package lcputility;
 public class ReferenceTable 
 {
     //Numero di righe da agguingere ad ogni chiamata di addRow
-    private int incrementRow;
+    private final int incrementRow;
     //Numero di righe della tabella
     private int size;
     //Tabella dei riferimenti tra singolo carattere e gruppo di proposizioni        

@@ -17,6 +17,8 @@ public class Predicate
     public ArrayList<String> prSx;
     public ArrayList<String> prDx;
     
+    
+    
     public Predicate( ArrayList<String> sx, ArrayList<String> dx )
     {
         prSx = new ArrayList<String>();
