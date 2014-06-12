@@ -17,11 +17,19 @@ public class LCp
         //Frase da analizzare, implementare in android due form che contengono
         //rispettivamente la parte sinistra e quella destra del sequente
         
-        String sx = "((P>C)&(Q>C))vD";
-        String dx = "(PvQ)>C";
+        System.out.println();
         
-        Solve solve = new Solve( sx, dx );
+        if( args.length != 2 ) System.out.println( "Numero di parametri non valido" );
+        else
+        {
+            String sx = args[0];
+            String dx = args[1];
         
-        System.out.println( solve.threeLeaf() );
+            Solve solve = new Solve( sx, dx );
+        
+            System.out.println( solve.threeLeaf() );
+        }
+        
+        System.out.println();
     }
 }
