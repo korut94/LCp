@@ -110,8 +110,7 @@ public class Solve implements Runnable
                 sequents[i].printPredicate();
             }
             
-            //Capire perche' deve decrementare di uno
-            response = tautology( baseNegSequent - 1 );
+            response = tautology( baseNegSequent );
             
             if( response == indexSequent ) 
             {
@@ -267,9 +266,8 @@ public class Solve implements Runnable
     {
         //Lo start indica in quale posizione dell'array inizia l'elenco delle
         //foglie dell'albero preso in esame
-        boolean foundNotAxiom = !( isAxiomIdentity( sequents[start].prSx, 
-                                                    sequents[start].prDx ) );
-        int indPre = start + 1;
+        boolean foundNotAxiom = false;
+        int indPre = start;
         
         //Cerca la prima foglia che non si chiude
         while( indPre < indexSequent && !foundNotAxiom )
@@ -342,6 +340,26 @@ public class Solve implements Runnable
         }
         
         return temp;
+    }
+    
+    
+    
+    private synchronized void creaRamo( ArrayList<String> sx, ArrayList<String> dx, String s, int verso )
+    {
+        try{ if( reader ) wait(); }
+        catch( Exception e ){}
+                    
+        //Prenoto la lettura dell'array sequents
+        reader = true;
+                    
+        //Creo il ramo
+        indexSequent++;
+        sequents[ indexSequent ] = new Predicate( sx, dx );
+        
+        //Ramo sinistro
+        if( verso == 0 ) sequents[ indexSequent ].prSx.add( s );
+        //Ramo destro
+        else if( verso == 1 ) sequents[ indexSequent ].prDx.add( 0, s );
     }
     
     
@@ -453,21 +471,9 @@ public class Solve implements Runnable
                 //Creo il thread per il ramo destro
                 Thread trDxE = new Thread( this );
                 
-                synchronized( this )
-                {
-                    try{ if( reader ) wait(); }
-                    catch( Exception e ){}
-                    
-                    //Prenoto la lettura dell'array sequents
-                    reader = true;
-                    
-                    //Creo il ramo destro
-                    indexSequent++;
-                    sequents[ indexSequent ] = new Predicate( listSx, listDx );
-                    sequents[ indexSequent ].prDx.add( 0, splitE[1] );
-                    
-                    trDxE.start();
-                }
+                creaRamo( listSx, listDx, splitE[1], 1 );
+                
+                trDxE.start();
                 
                 //Puscio il thread nello stack per eseguire la join 
                 //successivamente
@@ -489,21 +495,9 @@ public class Solve implements Runnable
                 //Creo il thread per il ramo destro
                 Thread trDxV = new Thread( this );
                 
-                synchronized( this )
-                {
-                    try{ if( reader ) wait(); }
-                    catch( Exception e ){}
-                    
-                    //Prenoto la lettura dell'array sequents
-                    reader = true;
-                    
-                    //Creo il ramo destro
-                    indexSequent++;
-                    sequents[ indexSequent ] = new Predicate( listSx, listDx );
-                    sequents[ indexSequent ].prSx.add( splitV[1] );
+                creaRamo( listSx, listDx, splitV[1], 0 );
                 
-                    trDxV.start();
-                }
+                trDxV.start();
                 
                 //Puscio il thread nello stack per eseguire la join 
                 //successivamente
@@ -525,21 +519,9 @@ public class Solve implements Runnable
                 //Creo il thread per il ramo destro
                 Thread trDxImp = new Thread( this );
                 
-                synchronized( this )
-                {
-                    try{ if( reader ) wait(); }
-                    catch( Exception e ){}
-                    
-                    //Prenoto la lettura dell'array sequents
-                    reader = true;
-                    
-                    //Creo il ramo destro
-                    indexSequent++;
-                    sequents[ indexSequent ] = new Predicate( listSx, listDx );
-                    sequents[ indexSequent ].prSx.add( splitImp[1] );
+                creaRamo( listSx, listDx, splitImp[1], 0 );
                 
-                    trDxImp.start();
-                }
+                trDxImp.start();
                 
                 //Puscio il thread nello stack per eseguire la join 
                 //successivamente
