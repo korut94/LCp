@@ -7,13 +7,26 @@ import java.util.Stack;
 /**
  * @author Mantovani Andrea
  * 
+ * @version 1.3.1
+ * - L'albero di derivazione e' inserito dentro ad una struttura ad albero binario restituito dalla funzione treeLeaf
+ * - L'ArrayList <i>sequents</i> viene svuotato al momento della derivazione del sequente negato
+ * - Tolti metodi non utilizzati
+ * - La funzione presentOperand restituisce -1 se la dimensione dell'ArrayList e' minore o uguale alla posizione di ricerca inserita
+ * 
+ * - DA AGGIUNGERE NELLE VERSIONI SUCCESSIVE:
+ *   + Controllo sintattico del sequente
+ *   + Il sequente ed il suo negato vengono derivati in parallelo
+ *   + Smaltire il numero di sequenti compatti singoli inseriti nella ReferenceTable:
+ *     / Riducento all'essenziale il numero di parentesi tonde dentro ad un sequente prima di compattarlo
+ *     / Scompattare il sequente compatto una volta inserito nell'albero ed eliminando parentesi superflue
+ * 
  * @version 1.2.2
  * - Implementata la gestione del sequente vuoto sia a destra che a sinistra
  * 
  * - DA AGGIUNGERE NELLE VERSIONI SUCCESSIVE:
  * 	 + Controllore sintattico del sequente
  * 	 + Struttura per contenere l'albero di derivazione, con annesse regole utilizzate, per poterlo stampare a video in un formato leggibile
- * 	 + Il metodo threeLeaf deve restituire l'albero di derivazione
+ * 	 + Il metodo treeLeaf deve restituire l'albero di derivazione
  *   + Smaltire il numero di sequenti compatti singoli inseriti nella ReferenceTable:
  *     / Riducento all'essenziale il numero di parentesi tonde dentro ad un sequente prima di compattarlo
  *     / Scompattare il sequente compatto una volta inserito nell'albero ed eliminando parentesi superflue
@@ -33,7 +46,6 @@ import java.util.Stack;
  * @version 1.0.0
  * - La derivazione di sequenti semplici viene svolta senza errori
 */
-
 public class Solve implements Runnable
 {
 	//Tabella la quale ogni entry e' il sequente di un ramo. Alla fine conterra'
@@ -59,7 +71,9 @@ public class Solve implements Runnable
         tableGroup = new ReferenceTable( 20 );
         sequents = new ArrayList<Predicate>();
         operandPriority = new legOperand();
-
+        
+        alberoDerivato = new Tree();
+        
         //La chiamata dal main ha indice 0
         indexSequent = 0;
         
@@ -98,7 +112,7 @@ public class Solve implements Runnable
         //ottenuto dallo split.
         sequents.add( new Predicate( Arrays.asList( elemPrSx ), Arrays.asList( elemPrDx ) ) );
         
-        //Creo il sequente negato che verr� risolto dopo il sequente originale
+        //Creo il sequente negato che verra' risolto dopo il sequente originale
         negSequent = new Predicate( Arrays.asList( elemNeSx ), Arrays.asList( elemNeDx ) );
 
         reader = true;
@@ -106,77 +120,27 @@ public class Solve implements Runnable
 
 
 
-    public String threeLeaf()
-    {
-        //Deriva l'albero utilizzando un thread per ramo
+    public Tree treeLeaf()
+    {   
+    	//Creo la radice dell'albero di derivazione
+    	alberoDerivato.addSx( sequents.get( 0 ), 0 );
+    	
+    	//Deriva l'albero utilizzando un thread per ramo
         run();
-
-        //Numero di foglie raggiunto
-        indexSequent++;
-
-        int response = tautology( 0 );
-
-        //Tutte le foglie sono assiomi
-        if( response == indexSequent ) return "Il sequente e' una tautologia";
-        else
-        {
-            int posNotAxiomSeq = response;
-
-            int baseNegSequent = indexSequent;
-            sequents.add( negSequent );
-
-            //Derivo il sequente negato, indexSequent aumentera' in base al
-            //numero di foglie che sono generate
-            run();
-
-            //Numero di foglie raggiunto
-            indexSequent++;
-
-            response = tautology( baseNegSequent );
-
-            if( response == indexSequent ) return "Il sequente e' un paradosso";
-
-            else
-            {
-            	System.out.println( "Sequente" );
-
-                for( int i = 0; i < baseNegSequent; i++ ) sequents.get( i ).printPredicate();
-
-                System.out.println( "Negato" );
-
-                for( int i = baseNegSequent; i < indexSequent; i++ ) sequents.get( i ).printPredicate();
-            	
-                int posNotAxiomNeg = response;
-
-                String result = "Il sequente non e' valido per: ";
-
-                ArrayList<String> preSx = sequents.get( posNotAxiomSeq ).prSx;
-                ArrayList<String> preDx = sequents.get( posNotAxiomSeq ).prDx;
-
-                //Rimuovo il segno '%' dalla lista di sinista e il segno '@' dalla
-                //lista di destra essendo annotazioni superflue da questo punto
-                preSx.remove( 0 );
-                preDx.remove( preDx.size() - 1 );
-
-                result += atomicVariableSet( preSx, '1' );
-                result += atomicVariableSet( preDx, '0' );
-
-                result += '\n' + "Il sequente e' soddisfacibile per: ";
-
-                preSx = sequents.get( posNotAxiomNeg ).prSx;
-                preDx = sequents.get( posNotAxiomNeg ).prDx;
-
-                //Rimuovo il segno '%' dalla lista di sinista e il segno '@' dalla
-                //lista di destra essendo annotazioni superflue da questo punto
-                preSx.remove( 0 );
-                preDx.remove( preDx.size() - 1 );
-
-                result += atomicVariableSet( preSx, '1' );
-                result += atomicVariableSet( preDx, '0' );
-
-                return result;
-            }
-        }
+        
+        //Ritorno alla situazione iniziale
+        indexSequent = 0;
+        sequents.clear();
+        
+        sequents.add( negSequent );
+        
+        //Continuo dal nodo radice
+        alberoDerivato.reset();
+        alberoDerivato.addDx( negSequent, 0 );
+        
+        run();
+       
+        return alberoDerivato;
     }
 
 
@@ -184,7 +148,7 @@ public class Solve implements Runnable
     @Override
     public void run()
     {
-        int index = 0;
+    	int index = 0;
 
         synchronized( this )
         {
@@ -267,6 +231,8 @@ public class Solve implements Runnable
 
     private int presentOperand( ArrayList<String> list, int start, int end )
     {
+    	if( start >= end ) return -1;
+    	
         int pos = start;
         boolean present = false;
 
@@ -281,34 +247,7 @@ public class Solve implements Runnable
     }
 
 
-    /*
-    Tautology restituisce la posizione di dove si e' fermato, se fosse uguale a
-    indexSequent vuol dire che tutte le foglie sono assiomi, altrimenti e' stata
-    trovata un foglia che non si chiude
-    */
-    private int tautology( int start )
-    {
-        //Lo start indica in quale posizione dell'array inizia l'elenco delle
-        //foglie dell'albero preso in esame
-        boolean foundNotAxiom = false;
-        int indPre = start;
-
-        //Cerca la prima foglia che non si chiude
-        while( indPre < indexSequent && !foundNotAxiom )
-        {
-            if( !( isAxiomIdentity( sequents.get( indPre ).prSx, sequents.get( indPre ).prDx ) ) )
-            {
-                foundNotAxiom = true;
-            }
-
-            else indPre++;
-        }
-
-        return indPre;
-    }
-
-
-
+    
     private String atomicVariableSet( ArrayList<String> variable, char set )
     {
         String setting = new String();
@@ -367,7 +306,7 @@ public class Solve implements Runnable
 
 
 
-    private synchronized void creaRamo( ArrayList<String> sx, ArrayList<String> dx, String s, int verso )
+    private synchronized void creaRamo( ArrayList<String> sx, ArrayList<String> dx, String s, int verso, int idThreadCalled )
     {
         try{ while( reader ) wait(); }
         catch( Exception e ){}
@@ -375,14 +314,24 @@ public class Solve implements Runnable
         //Prenoto la lettura dell'array sequents
         reader = true;
 
+        //Copio gli array passati in due nuove liste per evitare side effect
+        ArrayList<String> seqSx = new ArrayList<String>( sx );
+        ArrayList<String> seqDx = new ArrayList<String>( dx );
+        
+        //Ramo sinistro
+        if( verso == 0 ) seqSx.add( s );
+        //Ramo destro
+        else if( verso == 1 ) seqDx.add( 0, s );
+        
+        Predicate pr = new Predicate( seqSx, seqDx );
+        
         //Creo il ramo
         indexSequent++;
-        sequents.add( new Predicate( sx, dx ) );
-
-        //Ramo sinistro
-        if( verso == 0 ) sequents.get( indexSequent ).prSx.add( s );
-        //Ramo destro
-        else if( verso == 1 ) sequents.get( indexSequent ).prDx.add( 0, s );
+        sequents.add( pr );
+        
+        //Divido l'albero derivato in due rami indipendenti
+        alberoDerivato.branchSplit( idThreadCalled, indexSequent );
+        alberoDerivato.addDx( pr, indexSequent );
     }
 
 
@@ -425,7 +374,7 @@ public class Solve implements Runnable
             //Applicata regola & sinistra
             if( listSx.get( lastElemSx ).contains( "&" ) )
             {
-            	alberoDerivato.add( new Predicate( listSx, listDx ), "&-sx", idThread );
+            	alberoDerivato.ruleUsed( "&-sx", idThread );
             	
                 //Faccio il pop della stringa
                 derElem = listSx.remove( lastElemSx );
@@ -434,12 +383,14 @@ public class Solve implements Runnable
                 //Puscio A e B separati
                 listSx.add( splitE[0] );
                 listSx.add( splitE[1] );
+                
+                alberoDerivato.addSx( new Predicate( listSx, listDx ), idThread );
             }
 
             //Applicata la regola v destra
             else if( listDx.get( 0 ).contains( "v" )  )
             {
-            	alberoDerivato.add( new Predicate( listSx, listDx ), "V-dx", idThread );
+            	alberoDerivato.ruleUsed( "V-dx", idThread );
             	
                 //Faccio il push della stringa
                 derElem = listDx.remove( 0 );
@@ -448,33 +399,45 @@ public class Solve implements Runnable
                 //Rinserisco A e B separati all'inizio della lista
                 listDx.add( 0, splitV[0] );
                 listDx.add( 1, splitV[1] );
+                
+                alberoDerivato.addSx( new Predicate( listSx, listDx ), idThread );
             }
 
             //Applicata la regola del - sinistra
             else if( listSx.get( lastElemSx ).contains( "-" ) )
             {
+            	alberoDerivato.ruleUsed( "--sx", idThread );
+            	
                 //Faccio il pop della stringa dalla lista di sinistra
                 derElem = listSx.remove( lastElemSx );
                 //Tolgo il segno di negato
                 derElem = derElem.substring( 1 );
                 //La porto nella lista di destra mettendola all'inizio
                 listDx.add( 0, derElem );
+                
+                alberoDerivato.addSx( new Predicate( listSx, listDx ), idThread );
             }
 
             //Applicata la regola del - destra
             else if( listDx.get( 0 ).contains( "-" ) )
             {
+            	alberoDerivato.ruleUsed( "--dx", idThread );
+            	
                 //Faccio la pop della stringa dalla lista di destra
                 derElem = listDx.remove( 0 );
                 //Tolgo il segno di negato
                 derElem = derElem.substring( 1 );
                 //La porto nella lista di sinistra facendo il push
                 listSx.add( derElem );
+                
+                alberoDerivato.addSx( new Predicate( listSx, listDx ), idThread );
             }
 
             //Applicata la regola del > destra
             else if( listDx.get( 0 ).contains( ">" ) )
             {
+            	alberoDerivato.ruleUsed( ">-dx", idThread );
+            	
                 //Faccio il pop della string dalla lista di destra
                 derElem = listDx.remove( 0 );
                 //Faccio lo split della stringa per ottenere i parametri A e B
@@ -485,12 +448,16 @@ public class Solve implements Runnable
                 listSx.add( splitImpl[0] );
                 //Il parametro B lo inseriamo all'inizio della lista di destra
                 listDx.add( 0, splitImpl[1] );
+                
+                alberoDerivato.addSx( new Predicate( listSx, listDx ), idThread );
             }
 
             //Applicata la regola della & destra
             else if( listDx.get( 0 ).contains( "&" ) )
             {
-                //Faccio il pop della string della lista di destra
+            	alberoDerivato.ruleUsed( "&-dx", idThread );
+            	
+            	//Faccio il pop della string della lista di destra
                 derElem = listDx.remove( 0 );
                 //Splitto l'operatore & per ottenere A e B
                 String[] splitE = derElem.split( "&" );
@@ -498,7 +465,7 @@ public class Solve implements Runnable
                 //Creo il thread per il ramo destro
                 Thread trDxE = new Thread( this );
 
-                creaRamo( listSx, listDx, splitE[1], 1 );
+                creaRamo( listSx, listDx, splitE[1], 1, idThread );
 
                 trDxE.start();
 
@@ -509,11 +476,15 @@ public class Solve implements Runnable
                 //Inserisco l'operando A nella stringa di destra in modo
                 //da creare il ramo sinistro
                 listDx.add( 0, splitE[0] );
+                
+                alberoDerivato.addSx( new Predicate( listSx, listDx ), idThread );
             }
 
             //Applicata la regola della v sinistra
             else if( listSx.get( lastElemSx ).contains( "v" ) )
             {
+            	alberoDerivato.ruleUsed( "V-sx", idThread );
+            	
                 //Rimuovo l'ultimo elemento della lista di sinistra
                 derElem = listSx.remove( lastElemSx );
                 //Faccio lo split per ottenere A e B dell'operatore v
@@ -522,7 +493,7 @@ public class Solve implements Runnable
                 //Creo il thread per il ramo destro
                 Thread trDxV = new Thread( this );
 
-                creaRamo( listSx, listDx, splitV[1], 0 );
+                creaRamo( listSx, listDx, splitV[1], 0, idThread );
 
                 trDxV.start();
 
@@ -533,11 +504,15 @@ public class Solve implements Runnable
                 //Puscio l'operatore A nella stringa di sinistra in modo
                 //da creare il ramo sinistro
                 listSx.add( splitV[0] );
+                
+                alberoDerivato.addSx( new Predicate( listSx, listDx ), idThread );
             }
 
             //Applicata la regola del > sinstra
             else if( listSx.get( lastElemSx ).contains( ">" ) )
             {
+            	alberoDerivato.ruleUsed( ">-sx", idThread );
+            	
                 //Rimuovo l'ultimo elemento della stringa di sinistra
                 derElem = listSx.remove( lastElemSx );
                 //Faccio lo split per ottenere A e B dell'operatore >
@@ -546,7 +521,7 @@ public class Solve implements Runnable
                 //Creo il thread per il ramo destro
                 Thread trDxImp = new Thread( this );
 
-                creaRamo( listSx, listDx, splitImp[1], 0 );
+                creaRamo( listSx, listDx, splitImp[1], 0, idThread );
 
                 trDxImp.start();
 
@@ -557,6 +532,8 @@ public class Solve implements Runnable
                 //Inserisco A nella stringa di destra per creare il ramo
                 //di sinistra
                 listDx.add( 0, splitImp[0] );
+                
+                alberoDerivato.addSx( new Predicate( listSx, listDx ), idThread );
             }
 
             //Non potendo applicare nessuna regola di derivazione possiamo
@@ -570,7 +547,7 @@ public class Solve implements Runnable
                 int pos = presentOperand( listSx, 0, lastElemSx );
 
                 //Nessun nuovo operando o periodo compatto trovato a sinistra
-                if( pos == -1 && listDx.size() > 1 )
+                if( pos == -1 )
                 {
                     pos = presentOperand( listDx, 1, listDx.size() );
 
@@ -578,10 +555,36 @@ public class Solve implements Runnable
                     //e a sinistra. Siamo in presenza di una foglia senza assiomi
                     if( pos == -1 )
                     {
+                    	//Dimensioni liste prime di un eventuale compattamento
+                    	int sizeSeqSx = listSx.size();
+                    	int sizeSeqDx = listDx.size();
+                    	
                     	//Applico la regola del compattamento a sinistra
                     	ruleCompact( listSx );
+                    	
+                    	//Solo se e' stato necessario compattare inserisco il nuovo sequente sull'albero
+                    	if( listSx.size() < sizeSeqSx )
+                    	{
+                    		alberoDerivato.ruleUsed( "comp-sx", idThread );
+                    		alberoDerivato.addSx( new Predicate( listSx, listDx ), idThread );
+                    	}
+                    	
                     	//Applico la regola del compattamento a destra
                     	ruleCompact( listDx );
+                    	
+                    	if( listDx.size() < sizeSeqDx )
+                    	{
+                    		alberoDerivato.ruleUsed( "comp-dx", idThread );
+                    		alberoDerivato.addSx( new Predicate( listSx, listDx ), idThread );
+                    	}
+                    	
+                    	if( isAxiomIdentity( listSx, listDx ) ) alberoDerivato.ruleUsed( "ax-id", idThread );
+                    	//Nella foglia dell'albero, se non e' una assioma, verra scritta nella regola usata i valori delle variabili per cui il nodo e' falso
+                    	else
+                    	{
+                    		String variableSet = atomicVariableSet( listSx, '1' ) + atomicVariableSet( listDx, '0' );
+                    		alberoDerivato.ruleUsed( variableSet, idThread );
+                    	}
                     	
                         isLeaf = true;
                         //Attendi che termino gli altri rami
@@ -591,35 +594,32 @@ public class Solve implements Runnable
                     //Altrimenti applico lo scambio a destra
                     else
                     {
+                    	alberoDerivato.ruleUsed( "sc-dx", idThread );
+                    	
                         //Copio la stringa in posizione pos della lista
                         derElem = listDx.get( pos );
                         //La sostituisco con quella in posizione 0
                         listDx.set( pos, listDx.get( 0 ) );
                         //La setto in posizione 0
                         listDx.set( 0, derElem );
+                        
+                        alberoDerivato.addSx( new Predicate( listSx, listDx ), idThread );
                     }
                 }
 
                 //Applicato la regola dello scambio a sinistra
-                else if( pos != -1 )
+                else
                 {
+                	alberoDerivato.ruleUsed( "sc-sx", idThread );
+                	
                     //Copio la stringa in posizione pos della lista
                     derElem = listSx.get( pos );
                     //La sostituisco con quella in fondo
                     listSx.set( pos, listSx.get( lastElemSx ) );
                     //La setto alla fine della lista
                     listSx.set( lastElemSx, derElem );
-                }
-
-                //Lista destra vuota
-                else
-                {
-                	//Applico la regola del compattamento a sinistra
-                	ruleCompact( listSx );
-                	
-                	isLeaf = true;
-                    //Attendi che termino gli altri rami
-                    waitThread( threads );
+                    
+                    alberoDerivato.addSx( new Predicate( listSx, listDx ), idThread );
                 }
             }
         }
