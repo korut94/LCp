@@ -16,6 +16,7 @@ import java.util.Stack;
  * - DA AGGIUNGERE NELLE VERSIONI SUCCESSIVE:
  *   + Controllo sintattico del sequente
  *   + Il sequente ed il suo negato vengono derivati in parallelo
+ *   + In alberoDerivato devono essere inseriti sequenti non compatti con il numero di parentesi minimo
  *   + Smaltire il numero di sequenti compatti singoli inseriti nella ReferenceTable:
  *     / Riducento all'essenziale il numero di parentesi tonde dentro ad un sequente prima di compattarlo
  *     / Scompattare il sequente compatto una volta inserito nell'albero ed eliminando parentesi superflue
