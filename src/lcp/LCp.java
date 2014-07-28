@@ -11,11 +11,11 @@ public class LCp
         
         System.out.println();
         
-        String sx = "-(AvC>C&B)>-(B>A)";
-        String dx = "";
+        String sx = "-(A&B>((A>(A>B))>A))vB";
+        String dx = "Av(A>B)>B&(B>A)";
         
         Solve solve = new Solve( sx, dx );
         
-        System.out.println( solve.threeLeaf() );
+        solve.treeLeaf().stampa();
 	}
 }
