@@ -97,10 +97,10 @@ public class Solve implements Runnable
         String negative = "-(";
         
         if( sx.isEmpty() ) negative += "[%]>";
-        else negative += '[' + sx + "]>";
+        else negative += '(' + sx + ")>";
         
         if( dx.isEmpty() ) negative += "[@])";
-        else negative += '[' + dx + "])";
+        else negative += '(' + dx + "))";
         
         negative = compatta( negative ) + ",@";
 
