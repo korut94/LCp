@@ -2,16 +2,17 @@ package lcputility;
 
 public class Derivate 
 {
-	private Predicate sequent;
+	private String predicate;
 	private String rule;
 	
 	/**
-	 * @param a : sequente da derivare
-	 * @param b : regola da utilizzare o assioma usato in caso di una foglia
+	 * @param a : parte sinistra del sequente
+	 * @param b : parte destra del sequente
 	 */
-	public Derivate( Predicate a )
+	public Derivate( String a )
 	{
-		sequent = new Predicate( a.prSx, a.prDx );
+		predicate = new String( a );
+		rule = new String();
 	}
 	
 	
@@ -20,8 +21,7 @@ public class Derivate
 	 */
 	public void print()
 	{
-		System.out.print( rule + " " );
-		sequent.printPredicate();
+		System.out.println( predicate + " {" + rule + '}' );
 	}
 	
 	
