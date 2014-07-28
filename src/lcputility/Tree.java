@@ -54,13 +54,11 @@ public class Tree
 	 * @param idWorker : id del thread che lavora a quel ramo dell'albero
 	 * @return Aggiunge un nodo all'albero sul ramo sinistro contenente il sequente con la regola da applicare
 	 */
-	public void addSx( Predicate seq, int idWorker )
+	public void addSx( Derivate seq, int idWorker )
 	{
-		Derivate der = new Derivate( seq );
-		Nodo p = new Nodo( der, null, null );
-		
 		Nodo currentPoint = workingNode.get( idWorker );
-			
+		Nodo p = new Nodo( seq, null, null );
+		
 		currentPoint.treeSX = p;
 			
 		workingNode.set( idWorker, p );
@@ -72,12 +70,10 @@ public class Tree
 	 * @param idWorker : id del thread che lavora a quel ramo dell'albero
 	 * @return Aggiunge un nodo all'albero contenente il sequente con la regola da applicare
 	 */
-	public void addDx( Predicate seq, int idWorker )
+	public void addDx( Derivate seq, int idWorker )
 	{
-		Derivate der = new Derivate( seq );
-		Nodo p = new Nodo( der, null, null );
-		
 		Nodo currentPoint = workingNode.get( idWorker );
+		Nodo p = new Nodo( seq, null, null );
 			
 		currentPoint.treeDX = p;
 			
