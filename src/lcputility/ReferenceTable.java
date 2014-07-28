@@ -11,16 +11,28 @@ public class ReferenceTable
     //Numero di righe della tabella
     private int size;
     //Tabella dei riferimenti tra singolo carattere e gruppo di proposizioni        
-    private String[] tableRef;
+    private ReferenceLine[] tableRef;
+    
+    private class ReferenceLine
+    {
+    	public boolean bracketAdd;
+    	public String reference;
+    	
+    	public ReferenceLine( String a, boolean b )
+    	{
+    		reference = new String( a );
+    		bracketAdd = b;
+    	}
+    }
     
     public ReferenceTable( int numRow )
     {
-        tableRef = new String[ numRow ];
+        tableRef = new ReferenceLine[ numRow ];
         incrementRow = 10;
         size = 0;
     }
     
-    public String getReference( String index )
+    public String getReference( String index, boolean returnBracket )
     {
         //Rimuoco i cancelletti che delimitano il numero
         index = index.substring( 1, index.length() - 1 );
@@ -28,10 +40,11 @@ public class ReferenceTable
         int row = Integer.parseInt( index );
         
         //Restituisco la stringa referenziata
-        return tableRef[ row ];
+        if( returnBracket && tableRef[ row ].bracketAdd ) return '(' + tableRef[ row ].reference + ')';
+        else return tableRef[ row ].reference;
     }
     
-    public String insertReference( String pr )
+    public String insertReference( String pr, boolean opt )
     {
         if( size == tableRef.length ) addRows();
         
@@ -43,7 +56,7 @@ public class ReferenceTable
         if( ind != -1 ) return '#'+Integer.toString( ind )+'#';
         
         //Altrimenti aggiungo alla tabella il riferimento
-        tableRef[ size ] = pr;
+        tableRef[ size ] = new ReferenceLine( pr, opt );
         
         String index = '#'+Integer.toString( size )+'#';
         
@@ -58,7 +71,7 @@ public class ReferenceTable
     
     public void printAllReference()
     {
-        for( int i = 0; i < size; i++ ) System.out.println( i + " " + tableRef[i] );
+        for( int i = 0; i < size; i++ ) System.out.println( i + " " + tableRef[i].reference  + " " + tableRef[i].bracketAdd );
     }
     
     private int alreadyInsert( String pr )
@@ -69,7 +82,7 @@ public class ReferenceTable
         while( i < size && !found ) 
         {
             //Trovato e mantengo la posizione in cui l'ho trovato
-            if( tableRef[i].equals( pr ) ) found = true;
+            if( tableRef[i].reference.equals( pr ) ) found = true;
             //Continuo a cercarlo
             else i++;
         }
@@ -80,7 +93,7 @@ public class ReferenceTable
     
     private void addRows()
     {
-        String[] tempTable = new String[ size + incrementRow ];
+        ReferenceLine[] tempTable = new ReferenceLine[ size + incrementRow ];
         
         System.arraycopy( tableRef, 0, tempTable, 0, size );
         
