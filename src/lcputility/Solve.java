@@ -14,6 +14,7 @@ import java.util.Stack;
  * 	 + Provare a sostituire StringBuilder al posto delle stringhe per vedere se aumenta l'efficienza
  * 	 + Controllo sintattico del sequente
  * 	 + Il sequente ed il suo negato vengono derivati in parallelo
+ * 	 + Usare i simboli della logica
  * 
  * 
  * @version 1.3.1
